@@ -1,0 +1,62 @@
+# Matplotlib style for scientific plotting
+# This is the base style for "SciencePlots"
+# see: https://github.com/garrettj403/SciencePlots
+
+# Set color cycle: blue, green, yellow, red, violet, gray
+axes.prop_cycle : cycler('color', ['0C5DA5', '00B945', 'FF9500', 'FF2C00', '845B97', '474747', '9e9e9e'])
+
+# Set default figure size
+figure.figsize : 13, 7
+
+# Set x axis
+xtick.direction : in
+xtick.major.size : 5
+xtick.major.width : 1
+xtick.minor.size : 1.5
+xtick.minor.width : 1
+xtick.minor.visible : True
+xtick.top : True
+
+# Set y axis
+ytick.direction : in
+ytick.major.size : 5
+ytick.major.width : 1
+ytick.minor.size : 1.5
+ytick.minor.width : 1
+ytick.minor.visible : True
+ytick.right : True
+
+# Set line widths
+axes.linewidth : 0.5
+lines.linewidth : 1.
+
+# Always save as 'tight'
+savefig.bbox : tight
+savefig.pad_inches : 0.05
+
+# Use serif fonts
+font.family : serif
+font.size : 12
+mathtext.fontset : dejavuserif
+
+# Use LaTeX for math formatting
+text.usetex : True
+text.latex.preamble : \usepackage{amsmath} \usepackage{amssymb}
+
+# Add grid lines and turn the legend frame on
+
+# Grid lines
+axes.grid : True
+axes.axisbelow : True
+grid.linestyle : -
+grid.color : lightgrey
+grid.alpha : 1
+grid.linewidth : 0.5
+
+# Legend
+legend.frameon : True
+legend.framealpha : 1
+legend.fancybox : False
+legend.numpoints : 1
+legend.edgecolor : k
+patch.linewidth : 0.5
