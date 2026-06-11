@@ -1,0 +1,50 @@
+# --- Postavy a pozadí ---
+figure.facecolor:    white
+figure.edgecolor:    white
+axes.facecolor:      white
+
+# --- Čáry grafu (MATLAB "Parula" barevná paleta pro první 4 čáry) ---
+# Modrá, Oranžová, Žlutá, Fialová, Zelená, Světle modrá
+axes.prop_cycle: cycler('color', ['0072BD', 'D95319', 'EDB120', '7E2F8E', '77AC30', '4DBEEE', 'A2142F'])
+lines.linewidth: 1.5
+lines.antialiased: True
+
+font.family:         sans-serif
+font.sans-serif:     Helvetica, Arial, DejaVu Sans, Bitstream Vera Sans, sans-serif
+font.size:           10.0
+
+# --- Osy a ohraničení ---
+axes.edgecolor:      0.15       # Téměř černá jako v MATLABu
+axes.linewidth:      0.8
+axes.grid:           true       # MATLAB má mřížku standardně často zapnutou
+axes.titlesize:      large
+axes.labelsize:      medium
+axes.titleweight:    bold       # Nastaví tučné písmo pro nadpis grafu
+
+
+# --- Mřížka ---
+grid.color:          e0e0e0     # Jemná šedá
+grid.linestyle:      -
+grid.linewidth:      0.5
+grid.alpha:          1.0
+
+# --- Popisky os (Ticks) ---
+xtick.direction:     in         # MATLAB směřuje rysky dovnitř
+ytick.direction:     in
+xtick.top:           true       # Rysky se zobrazí i nahoře
+ytick.right:         true       # Rysky se zobrazí i vpravo
+xtick.major.size:    4
+xtick.minor.size:    2
+ytick.major.size:    4
+ytick.minor.size:    2
+xtick.color:         0.15
+ytick.color:         0.15
+xtick.labelsize:     medium
+ytick.labelsize:     medium
+
+# --- Legenda ---
+legend.loc:          upper right
+legend.frameon:      true       # MATLAB má legendu v rámečku
+legend.framealpha:   1.0
+legend.edgecolor:    0.15
+legend.fancybox:     false      # Ostré rohy rámečku
