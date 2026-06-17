@@ -1,0 +1,303 @@
+ab = 'https://drive.google.com/file/d/1cvkEOjalR9oz9Wq3-5Oke_1IoZJiOiGr/view?usp=sharing';
+um = 'https://drive.google.com/file/d/1C1-yJegXOipfNJ-B9gsk-PYTWYhgW0ya/view?usp=sharing';
+
+% 1. Definice sdíleného odkazu z Google Disku
+% (Nahraďte svým skutečným odkazem)
+sdilenyOdkaz = um;
+
+% Konverze na přímý odkaz ke stažení
+fileId = regexp(sdilenyOdkaz, 'd/([^/]+)', 'tokens');
+if isempty(fileId)
+    error('Nepodařilo se exportovat ID souboru z odkazu. Zkontrolujte formát.');
+end
+directLink = sprintf('https://drive.google.com/uc?export=download&id=%s', fileId{1}{1});
+
+% 2. Načtení CSV dat z internetu
+options = weboptions('Timeout', 30);
+tempFile = [tempname '.csv'];
+websave(tempFile, directLink, options);
+
+% Přečtení matice (vynechá první řádek s hlavičkou jako 'skip_header=1')
+UR = readmatrix(tempFile);
+delete(tempFile); % Smazání dočasného souboru
+
+% 3. Přepočet veličin (vektorizace)
+t = UR(:, 1) / 1e6;
+u = UR(:, 2) / 50;
+msb = UR(:, 3) / 1e3;
+
+% 1. Definice sdíleného odkazu z Google Disku
+% (Nahraďte svým skutečným odkazem)
+sdilenyOdkaz = ab;
+
+% Konverze na přímý odkaz ke stažení
+fileId = regexp(sdilenyOdkaz, 'd/([^/]+)', 'tokens');
+if isempty(fileId)
+    error('Nepodařilo se exportovat ID souboru z odkazu. Zkontrolujte formát.');
+end
+directLink = sprintf('https://drive.google.com/uc?export=download&id=%s', fileId{1}{1});
+
+% 2. Načtení CSV dat z internetu
+options = weboptions('Timeout', 30);
+tempFile = [tempname '.csv'];
+websave(tempFile, directLink, options);
+
+% Přečtení matice (vynechá první řádek s hlavičkou jako 'skip_header=1')
+UR = readmatrix(tempFile);
+delete(tempFile); % Smazání dočasného souboru
+
+% 3. Přepočet veličin (vektorizace)
+tt = UR(:, 1) / 1e6;
+a = UR(:, 2) / 1e3;
+b = UR(:, 3) / 1e3;
+
+% Výpočet diferencí a hledání indexů poklesu
+d_msb = diff(msb);
+prah = -2;
+indexy_poklesu = find(d_msb < prah);
+
+if isempty(indexy_poklesu)
+    R = 50;
+else
+    % V MATLABu indexujeme od 1. Pokud index vyjadřuje časový posun 
+    % (0. krok, 1. krok...), musíme odečíst 1, aby to sedělo s Pythonem.
+    R = (indexy_poklesu(1) - 1) * 350e-6; 
+end
+
+disp(R);
+
+
+%% Definice funkce timel
+% V MATLABu se uživatelské funkce píší na konec skriptu
+function [N1, N2] = timel(leng, okno, jaky)
+% Přístup ke globální proměnné R, pokud byla definována v hlavním skriptu
+% Alternativně můžeš R předat jako argument funkce
+global R; 
+if strcmp(jaky, "R")
+    jaky = R;
+end
+
+% Výpočet rozsahů pomocí linspace
+polovina = (leng - 1) / 2;
+N1 = linspace(jaky - (-1 * polovina) * okno, jaky - polovina * okno, leng);
+N2 = linspace(-1 * polovina * okno, polovina * okno, leng);
+
+% Seřazení N1 (v MATLABu linspace generuje vektor, sort ho seřadí)
+N1 = sort(N1);
+
+% Formátování N2 na text s přesností na 2 desetinná místa
+% string() s formátovacím operátorem funguje v moderním MATLABu skvěle
+N2 = compose("%.2f", N2); 
+
+% Pokud tvůj MATLAB nepodporuje compose, použij tuhle alternativu:
+% N2 = arrayfun(@(x) sprintf('%.2f', x), N2, 'UniformOutput', false);
+end
+
+% Inicializace figurky s definovanou velikostí (přepočet na pixely/body, cca 10.5x14.5 palců)
+figure('Units', 'inches', 'Position', [2, 2, 10.5, 14.5]);
+
+% Vytvoření mřížky (4 řádky, 1 sloupec)
+% 'TileSpacing','compact' odpovídá hspace/wspace v Pythonu
+tiledlayout(4, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+
+%% 1. Horní graf - zabere 1. řádek
+nexttile;
+% Poznámka: Funkci 'timel' musíš mít definovanou v MATLABu, vrací [N1, N2]
+[N1, N2] = timel(7, 2.5, R); 
+
+plot(t, u, 'DisplayName', 'U');
+hold on;
+plot(t, msb, 'DisplayName', 'MSB');
+hold off;
+
+xlim([R - 7.5, R + 7.5]);
+ylim([-10, 10]);
+xticks(N1);
+xticklabels(N2); % Pokud jsou v N2 textové popisky, MATLAB je schroupe
+
+title('MSB, U - na jemno');
+legend('Location', 'northeast');
+xlabel('relativní čas [ms]');
+ylabel('napětí [V]');
+grid on;
+
+%% 2. Prostřední graf - zabere 2. řádek
+nexttile;
+plot(tt, a, 'DisplayName', 'sin A');
+hold on;
+plot(tt, b, 'DisplayName', 'sin B');
+hold off;
+
+xlim([0, 0.4]);
+title('A,B');
+legend('Location', 'northeast');
+xlabel('čas [ms]');
+ylabel('napětí [V]');
+grid on;
+
+%% 3. Velký spodní graf - zabere zbývající 2 řádky (indexy 3 a 4)
+nexttile([2, 1]); % [výška 2 dlaždice, šířka 1 dlaždice]
+
+x = linspace(0, 1000, 10000);
+y = 0.6 * sin(1*x + 0) + 0;
+yy = 0.6 * sin(1*x + pi/2) + 0;
+w = 0.37 * sin(1*x + 0) + 0;
+ww = 0.37 * sin(1*x + pi/2) + 0;
+
+% Vykreslení kružnic (lw=0.75 v Pythonu odpovídá 'LineWidth', 0.75)
+plot(y, yy, 'g', 'LineWidth', 0.75);
+hold on;
+plot(w, ww, 'g', 'LineWidth', 0.75);
+
+% Scatter plot (obdoba alpha a markeru v Pythonu)
+% MATLAB indexuje od 1, proto floor(length(a)/6) místo dělení se zaokrouhlením dolů
+idx_end = floor(length(a) / 6); 
+scatter(a(1:idx_end), b(1:idx_end), 10, '.', 'MarkerEdgeAlpha', 0.25, 'DisplayName', 'sin A/B');
+
+% Pomocné čáry (vlines a hlines)
+xline(0, '-.', 'Color', 'k', 'LineWidth', 0.75);
+yline(0, '-.', 'Color', 'k', 'LineWidth', 0.75);
+hold off;
+
+xlim([-1.05, 1.05]);
+ylim([-0.67, 0.67]);
+
+title('A,B kruh');
+legend('Location', 'northeast');
+xlabel('napětí [V]');
+ylabel('napětí [V]');
+
+% Ekvivalent set_aspect('equal', adjustable='box')
+axis equal;
+
+%% --- Hlavní skript ---
+
+% 1. Detekce indexů poklesu
+d_msb = diff(msb);
+prah = -2;
+indexy_poklesu = find(d_msb < prah);
+
+if isempty(indexy_poklesu)
+    R = 50;
+else
+    % Python indexuje od 0, MATLAB od 1. 
+    % Protože index reprezentuje posun (0. krok, 1. krok atd.), musíme odečíst 1.
+    R = (indexy_poklesu(1) - 1) * 350e-6; 
+end
+disp(R);
+
+% 2. Inicializace grafického okna (přepočet rozměrů na palce)
+fig = figure('Units', 'inches', 'Position', [1, 1, 10.5, 14.5]);
+
+% Vytvoření mřížky (4 řádky, 1 sloupec)
+tlo = tiledlayout(4, 1, 'TileSpacing', 'loose', 'Padding', 'compact');
+
+
+%% --- 1. Horní graf (1. řádek) ---
+nexttile;
+
+% Volání lokální funkce (definované na konci skriptu)
+[N1, N2] = timel(7, 2.5, R);
+
+plot(t, u, 'DisplayName', 'U');
+hold on;
+plot(t, msb, 'DisplayName', 'MSB');
+hold off;
+
+xlim([R - 7.5, R + 7.5]);
+ylim([-10, 10]);
+xticks(N1);
+xticklabels(N2); % MATLAB bez problému schroupe pole textových řetězců
+
+title('MSB, U - na jemno');
+legend('Location', 'northeast');
+xlabel('relativní čas (ms)');
+ylabel('napětí (V)');
+grid on;
+
+
+%% --- 2. Prostřední graf (2. řádek) ---
+nexttile;
+plot(tt, a, 'DisplayName', 'sin A');
+hold on;
+plot(tt, b, 'DisplayName', 'sin B');
+hold off;
+
+xlim([0, 0.4]);
+ylim([-0.6, 0.6]);
+title('A,B');
+legend('Location', 'northeast');
+xlabel('čas (ms)');
+ylabel('napětí (V)');
+grid on;
+
+
+%% --- 3. Velký spodní graf (zabere zbývající 2 řádky) ---
+nexttile([2, 1]); % Argument [2, 1] říká: roztáhni se přes 2 řádky a 1 sloupec
+
+x = linspace(0, 1000, 10000);
+y = 0.6 * sin(1*x + 0) + 0;
+yy = 0.6 * sin(1*x + pi/2) + 0;
+w = 0.37 * sin(1*x + 0) + 0;
+ww = 0.37 * sin(1*x + pi/2) + 0;
+
+% Vykreslení zelených kružnic (lw=0.75 odpovídá LineWidth=0.75)
+plot(y, yy, 'g', 'LineWidth', 0.75);
+hold on;
+plot(w, ww, 'g', 'LineWidth', 0.75);
+
+% Scatter plot (obdoba markeru, alpha průhlednosti a oříznutí pole)
+% V Pythonu: a[0:len(a)//6] -> v MATLABu indexujeme od 1 do floor(length(a)/6)
+idx_end = floor(length(a) / 6);
+scatter(a(1:idx_end), b(1:idx_end), 10, '.', ...
+    'MarkerEdgeAlpha', 0.25, ...
+    'LineWidth', 0.1, ...
+    'DisplayName', 'sin A/B');
+
+% Pomocné osy (vlines a hlines)
+xline(0, '-.', 'Color', 'k', 'LineWidth', 0.75);
+yline(0, '-.', 'Color', 'k', 'LineWidth', 0.75);
+hold off;
+
+xlim([-1.05, 1.05]);
+ylim([-0.67, 0.67]);
+title('A,B kruh');
+legend('Location', 'northeast');
+xlabel('napětí (V)');
+ylabel('napětí (V)');
+grid on;
+
+axis equal; 
+
+%%vytvoření figury víše
+
+temp_soubor = 'docasny_graf.png';
+exportgraphics(gcf, temp_soubor, 'Resolution', 150);
+
+% 3. Načtení binárních dat ze souboru (jako pole bajtů / uint8)
+fid = fopen(temp_soubor, 'r');
+binarni_data = fread(fid, '*uint8');
+fclose(fid);
+
+% 4. Smazání dočasného souboru (volitelné)
+delete(temp_soubor);
+
+% 5. Převod binárních dat na hexadecimální řetězec
+% Použití funkce sprintf je pro velké soubory extrémně rychlé
+hex_kod = sprintf('%02X', binarni_data);
+length(hex_kod)
+
+% Zobrazení výsledku v MATLABu (prvních 100 znaků)
+disp('Prvních 100 znaků hex kódu vašeho obrázku:');
+disp(hex_kod(1:100000));
+disp(hex_kod(100001:176240));
+
+N = linspace(1,L,round(L/100000))
+i = 1;
+length(N)
+for c = 2:length(N)
+    disp(i);
+    disp(N(c));
+    disp(hex_kod(i:N(c)));
+    i = i+N(c)+1;
+end
