@@ -13,6 +13,9 @@ font.family:         sans-serif
 font.sans-serif:     Helvetica, Arial, DejaVu Sans, Bitstream Vera Sans, sans-serif
 font.size:           10.0
 
+#axes.labelcolor:     black      # Čistě černá barva pro názvy os (X label, Y label)
+#axes.titlecolor:     black      # Čistě černá barva pro hlavní nadpis grafu
+
 # --- Osy a ohraničení ---
 axes.edgecolor:      0.15       # Téměř černá jako v MATLABu
 axes.linewidth:      0.8
