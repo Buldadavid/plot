@@ -44,6 +44,8 @@ xtick.color:         0.15
 ytick.color:         0.15
 xtick.labelsize:     medium
 ytick.labelsize:     medium
+xtick.major.pad: 7
+ytick.major.pad: 7
 
 # --- Legenda ---
 legend.loc:          upper right
